@@ -3,8 +3,8 @@ import { Student } from "../data/students";
 
 const apiKey = process.env.GEMINI_API_KEY;
 
-if (!apiKey) {
-  console.warn("GEMINI_API_KEY is missing. AI features will not work.");
+if (!apiKey || apiKey === "undefined" || apiKey === "null") {
+  console.error("GEMINI_API_KEY is missing or invalid. Please check your environment variables.");
 }
 
 const ai = new GoogleGenAI({ apiKey: apiKey || "" });
@@ -32,12 +32,12 @@ export async function getAdvice(student: Student) {
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3-flash-preview",
       contents: [{ parts: [{ text: prompt }] }],
     });
     return response.text || "Không thể lấy lời khuyên lúc này.";
   } catch (error) {
     console.error("Error fetching advice:", error);
-    return "Đã xảy ra lỗi khi kết nối với chuyên gia AI.";
+    return "Đã xảy ra lỗi khi kết nối với chuyên gia AI. Vui lòng kiểm tra cấu hình API Key.";
   }
 }
