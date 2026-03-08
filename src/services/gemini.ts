@@ -1,13 +1,25 @@
 import { GoogleGenAI } from "@google/genai";
 import { Student } from "../data/students";
 
-const apiKey = process.env.GEMINI_API_KEY;
+// Danh sách các API Key để xoay vòng (Key Rotation)
+const API_KEYS = [
+  "AIzaSyAgbnfgxjUiZ9vY2MIq1gVENA4jjImGYKQ",
+  "AIzaSyAFzM9XFcau7ktflmpJUL2LApizDpy0Ep0",
+  "AIzaSyCFc31ZNf6vHrqJCYHZV1Ha3W3VCZ-rWKw"
+];
 
-if (!apiKey || apiKey === "undefined" || apiKey === "null") {
-  console.error("GEMINI_API_KEY is missing or invalid. Please check your environment variables.");
-}
+// Hàm lấy API Key ngẫu nhiên hoặc từ môi trường nếu có
+const getApiKey = () => {
+  const envKey = process.env.GEMINI_API_KEY;
+  if (envKey && envKey !== "undefined" && envKey !== "null" && !envKey.startsWith("MY_")) {
+    return envKey;
+  }
+  // Chọn ngẫu nhiên một key từ danh sách
+  return API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
+};
 
-const ai = new GoogleGenAI({ apiKey: apiKey || "" });
+const apiKey = getApiKey();
+const ai = new GoogleGenAI({ apiKey: apiKey });
 
 export async function getAdvice(student: Student) {
   const prompt = `
@@ -38,6 +50,6 @@ export async function getAdvice(student: Student) {
     return response.text || "Không thể lấy lời khuyên lúc này.";
   } catch (error) {
     console.error("Error fetching advice:", error);
-    return "Đã xảy ra lỗi khi kết nối với chuyên gia AI. Vui lòng kiểm tra cấu hình API Key.";
+    return "Đã xảy ra lỗi khi kết nối với chuyên gia AI. Hệ thống đang quá tải, vui lòng thử lại sau giây lát.";
   }
 }
